@@ -1,9 +1,9 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import LandingPage from './pages/LandingPage';
-import IdeaBoardPage from './pages/IdeaBoardPage';
-import KanbanPage from './pages/KanbanPage';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+import LandingPage from "./pages/LandingPage";
+import IdeaBoardPage from "./pages/IdeaBoardPage";
+import KanbanPage from "./pages/KanbanPage";
 
 const theme = createTheme({
   palette: {

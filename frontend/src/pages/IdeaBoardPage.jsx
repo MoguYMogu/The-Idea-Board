@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Container,
@@ -24,7 +24,7 @@ import {
   Divider,
   InputAdornment,
   CircularProgress,
-} from '@mui/material';
+} from "@mui/material";
 import {
   ArrowBack,
   Add,
@@ -37,29 +37,33 @@ import {
   Delete,
   Refresh,
   SortByAlpha,
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+} from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 
 const IdeaBoardPage = () => {
   const navigate = useNavigate();
   const [ideas, setIdeas] = useState([]);
   const [filteredIdeas, setFilteredIdeas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState("");
   const [openAddDialog, setOpenAddDialog] = useState(false);
-  const [newIdea, setNewIdea] = useState({ content: '' });
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-  const [sortBy, setSortBy] = useState('newest'); // 'newest', 'oldest', 'popular', 'unpopular'
+  const [newIdea, setNewIdea] = useState({ content: "" });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+  const [sortBy, setSortBy] = useState("newest"); // 'newest', 'oldest', 'popular', 'unpopular'
 
   // Mock API endpoints (replace with actual API calls)
-  const API_BASE = 'http://localhost:5000/api';
+  const API_BASE = "http://localhost:5000/api";
 
-  const showSnackbar = (message, severity = 'success') => {
+  const showSnackbar = (message, severity = "success") => {
     setSnackbar({ open: true, message, severity });
   };
 
   const handleCloseSnackbar = () => {
-    setSnackbar(prev => ({ ...prev, open: false }));
+    setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
   // Fetch ideas from API
@@ -68,44 +72,45 @@ const IdeaBoardPage = () => {
       setLoading(true);
       const response = await fetch(`${API_BASE}/ideas`);
       const data = await response.json();
-      
+
       if (data.success) {
         setIdeas(data.data);
         setFilteredIdeas(data.data);
       } else {
-        showSnackbar('Failed to fetch ideas', 'error');
+        showSnackbar("Failed to fetch ideas", "error");
       }
     } catch (error) {
-      console.error('Error fetching ideas:', error);
+      console.error("Error fetching ideas:", error);
       // Use mock data if API fails
       const mockIdeas = [
         {
-          id: '1',
-          content: 'Build a mobile app for plant care reminders',
+          id: "1",
+          content: "Build a mobile app for plant care reminders",
           upvotes: 15,
           createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
         },
         {
-          id: '2', 
-          content: 'Create a virtual reality meditation experience',
+          id: "2",
+          content: "Create a virtual reality meditation experience",
           upvotes: 23,
           createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
         },
         {
-          id: '3',
-          content: 'Develop an AI-powered recipe suggestion app based on available ingredients',
+          id: "3",
+          content:
+            "Develop an AI-powered recipe suggestion app based on available ingredients",
           upvotes: 8,
           createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
         },
         {
-          id: '4',
-          content: 'Design a collaborative coding platform for students',
+          id: "4",
+          content: "Design a collaborative coding platform for students",
           upvotes: 32,
           createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
         },
         {
-          id: '5',
-          content: 'Build a smart home energy management system',
+          id: "5",
+          content: "Build a smart home energy management system",
           upvotes: 19,
           createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
         },
@@ -120,20 +125,20 @@ const IdeaBoardPage = () => {
   // Add new idea
   const handleAddIdea = async () => {
     if (!newIdea.content.trim()) {
-      showSnackbar('Please enter an idea', 'error');
+      showSnackbar("Please enter an idea", "error");
       return;
     }
 
     if (newIdea.content.length > 280) {
-      showSnackbar('Ideas must be 280 characters or less', 'error');
+      showSnackbar("Ideas must be 280 characters or less", "error");
       return;
     }
 
     try {
       const response = await fetch(`${API_BASE}/ideas`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ content: newIdea.content.trim() }),
       });
@@ -144,14 +149,14 @@ const IdeaBoardPage = () => {
         const updatedIdeas = [data.data, ...ideas];
         setIdeas(updatedIdeas);
         applyFiltersAndSort(updatedIdeas, searchText, sortBy);
-        setNewIdea({ content: '' });
+        setNewIdea({ content: "" });
         setOpenAddDialog(false);
-        showSnackbar('Idea added successfully! 🎉');
+        showSnackbar("Idea added successfully! 🎉");
       } else {
-        showSnackbar(data.error || 'Failed to add idea', 'error');
+        showSnackbar(data.error || "Failed to add idea", "error");
       }
     } catch (error) {
-      console.error('Error adding idea:', error);
+      console.error("Error adding idea:", error);
       // Fallback to local state if API fails
       const newIdeaObj = {
         id: Date.now().toString(),
@@ -162,9 +167,9 @@ const IdeaBoardPage = () => {
       const updatedIdeas = [newIdeaObj, ...ideas];
       setIdeas(updatedIdeas);
       applyFiltersAndSort(updatedIdeas, searchText, sortBy);
-      setNewIdea({ content: '' });
+      setNewIdea({ content: "" });
       setOpenAddDialog(false);
-      showSnackbar('Idea added locally! 💡');
+      showSnackbar("Idea added locally! 💡");
     }
   };
 
@@ -172,42 +177,42 @@ const IdeaBoardPage = () => {
   const handleUpvote = async (ideaId) => {
     try {
       const response = await fetch(`${API_BASE}/ideas/${ideaId}/upvote`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
       const data = await response.json();
 
       if (data.success) {
-        const updatedIdeas = ideas.map(idea =>
+        const updatedIdeas = ideas.map((idea) =>
           idea.id === ideaId ? { ...idea, upvotes: data.data.upvotes } : idea
         );
         setIdeas(updatedIdeas);
         applyFiltersAndSort(updatedIdeas, searchText, sortBy);
-        showSnackbar('Thanks for your upvote! 👍');
+        showSnackbar("Thanks for your upvote! 👍");
       } else {
-        showSnackbar(data.error || 'Failed to upvote', 'error');
+        showSnackbar(data.error || "Failed to upvote", "error");
       }
     } catch (error) {
-      console.error('Error upvoting idea:', error);
+      console.error("Error upvoting idea:", error);
       // Fallback to local state
-      const updatedIdeas = ideas.map(idea =>
+      const updatedIdeas = ideas.map((idea) =>
         idea.id === ideaId ? { ...idea, upvotes: idea.upvotes + 1 } : idea
       );
       setIdeas(updatedIdeas);
       applyFiltersAndSort(updatedIdeas, searchText, sortBy);
-      showSnackbar('Upvoted locally! 👍');
+      showSnackbar("Upvoted locally! 👍");
     }
   };
 
   // Delete idea (local only for demo)
   const handleDeleteIdea = (ideaId) => {
-    const updatedIdeas = ideas.filter(idea => idea.id !== ideaId);
+    const updatedIdeas = ideas.filter((idea) => idea.id !== ideaId);
     setIdeas(updatedIdeas);
     applyFiltersAndSort(updatedIdeas, searchText, sortBy);
-    showSnackbar('Idea deleted');
+    showSnackbar("Idea deleted");
   };
 
   // Apply filters and sorting
@@ -216,23 +221,23 @@ const IdeaBoardPage = () => {
 
     // Apply search filter
     if (search.trim()) {
-      filtered = filtered.filter(idea =>
+      filtered = filtered.filter((idea) =>
         idea.content.toLowerCase().includes(search.toLowerCase())
       );
     }
 
     // Apply sorting
     switch (sort) {
-      case 'popular':
+      case "popular":
         filtered.sort((a, b) => b.upvotes - a.upvotes);
         break;
-      case 'unpopular':
+      case "unpopular":
         filtered.sort((a, b) => a.upvotes - b.upvotes);
         break;
-      case 'oldest':
+      case "oldest":
         filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
         break;
-      case 'newest':
+      case "newest":
       default:
         filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         break;
@@ -258,10 +263,11 @@ const IdeaBoardPage = () => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
-    
-    if (diffInSeconds < 60) return 'Just now';
+
+    if (diffInSeconds < 60) return "Just now";
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)}h ago`;
     return `${Math.floor(diffInSeconds / 86400)}d ago`;
   };
 
@@ -270,19 +276,23 @@ const IdeaBoardPage = () => {
   }, []);
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+    <Box sx={{ minHeight: "100vh", backgroundColor: "#f5f5f5" }}>
       {/* Navigation */}
       <AppBar position="static" elevation={2}>
         <Toolbar>
           <Button
             startIcon={<ArrowBack />}
             color="inherit"
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             sx={{ mr: 2 }}
           >
             Back to Home
           </Button>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
+          <Typography
+            variant="h6"
+            component="div"
+            sx={{ flexGrow: 1, fontWeight: 600 }}
+          >
             💡 IdeaBoard - Community Innovation Hub
           </Typography>
           <IconButton color="inherit" onClick={fetchIdeas} disabled={loading}>
@@ -293,33 +303,56 @@ const IdeaBoardPage = () => {
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Header Stats */}
-        <Paper sx={{ p: 3, mb: 4, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-          <Box sx={{ textAlign: 'center', color: 'white' }}>
-            <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700 }}>
+        <Paper
+          sx={{
+            p: 3,
+            mb: 4,
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          }}
+        >
+          <Box sx={{ textAlign: "center", color: "white" }}>
+            <Typography
+              variant="h4"
+              component="h1"
+              gutterBottom
+              sx={{ fontWeight: 700 }}
+            >
               Community Idea Board
             </Typography>
             <Typography variant="h6" sx={{ mb: 3, opacity: 0.9 }}>
               Share your innovative ideas and help others grow theirs!
             </Typography>
-            
+
             <Grid container spacing={3} justifyContent="center">
               <Grid item xs={6} md={3}>
-                <Box sx={{ textAlign: 'center' }}>
+                <Box sx={{ textAlign: "center" }}>
                   <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
                     {ideas.length}
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
                     <Lightbulb sx={{ mr: 0.5, fontSize: 18 }} />
                     <Typography variant="body2">Total Ideas</Typography>
                   </Box>
                 </Box>
               </Grid>
               <Grid item xs={6} md={3}>
-                <Box sx={{ textAlign: 'center' }}>
+                <Box sx={{ textAlign: "center" }}>
                   <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
                     {ideas.reduce((sum, idea) => sum + idea.upvotes, 0)}
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
                     <TrendingUp sx={{ mr: 0.5, fontSize: 18 }} />
                     <Typography variant="body2">Total Upvotes</Typography>
                   </Box>
@@ -331,7 +364,14 @@ const IdeaBoardPage = () => {
 
         {/* Controls */}
         <Paper sx={{ p: 3, mb: 4 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 3,
+            }}
+          >
             <Typography variant="h5" fontWeight={600}>
               Ideas Dashboard
             </Typography>
@@ -339,13 +379,13 @@ const IdeaBoardPage = () => {
               variant="contained"
               startIcon={<Add />}
               onClick={() => setOpenAddDialog(true)}
-              sx={{ bgcolor: '#6E39CB' }}
+              sx={{ bgcolor: "#6E39CB" }}
             >
               Share New Idea
             </Button>
           </Box>
 
-          <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+          <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
             <TextField
               placeholder="Search ideas..."
               size="small"
@@ -362,23 +402,23 @@ const IdeaBoardPage = () => {
             />
 
             <Button
-              variant={sortBy === 'newest' ? 'contained' : 'outlined'}
+              variant={sortBy === "newest" ? "contained" : "outlined"}
               size="small"
-              onClick={() => handleSortChange('newest')}
+              onClick={() => handleSortChange("newest")}
             >
               Newest
             </Button>
             <Button
-              variant={sortBy === 'popular' ? 'contained' : 'outlined'}
+              variant={sortBy === "popular" ? "contained" : "outlined"}
               size="small"
-              onClick={() => handleSortChange('popular')}
+              onClick={() => handleSortChange("popular")}
             >
               Most Popular
             </Button>
             <Button
-              variant={sortBy === 'oldest' ? 'contained' : 'outlined'}
+              variant={sortBy === "oldest" ? "contained" : "outlined"}
               size="small"
-              onClick={() => handleSortChange('oldest')}
+              onClick={() => handleSortChange("oldest")}
             >
               Oldest
             </Button>
@@ -391,45 +431,70 @@ const IdeaBoardPage = () => {
 
         {/* Ideas Grid */}
         {loading && ideas.length === 0 ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
             <CircularProgress size={60} />
           </Box>
         ) : filteredIdeas.length === 0 ? (
-          <Paper sx={{ p: 6, textAlign: 'center' }}>
-            <Lightbulb sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
+          <Paper sx={{ p: 6, textAlign: "center" }}>
+            <Lightbulb sx={{ fontSize: 80, color: "text.secondary", mb: 2 }} />
             <Typography variant="h5" gutterBottom>
-              {searchText ? 'No ideas found' : 'No ideas yet!'}
+              {searchText ? "No ideas found" : "No ideas yet!"}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              {searchText ? 'Try adjusting your search terms.' : 'Be the first to share an innovative idea!'}
+              {searchText
+                ? "Try adjusting your search terms."
+                : "Be the first to share an innovative idea!"}
             </Typography>
           </Paper>
         ) : (
           <Grid container spacing={3}>
             {filteredIdeas.map((idea) => (
               <Grid item xs={12} sm={6} lg={4} key={idea.id}>
-                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <Card
+                  sx={{
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
                   <CardContent sx={{ flexGrow: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
-                      <Avatar sx={{ bgcolor: '#6E39CB', mr: 2, mt: 0.5 }}>
+                    <Box
+                      sx={{ display: "flex", alignItems: "flex-start", mb: 2 }}
+                    >
+                      <Avatar sx={{ bgcolor: "#6E39CB", mr: 2, mt: 0.5 }}>
                         <Lightbulb />
                       </Avatar>
-                      <Typography variant="body1" sx={{ flexGrow: 1, lineHeight: 1.6 }}>
+                      <Typography
+                        variant="body1"
+                        sx={{ flexGrow: 1, lineHeight: 1.6 }}
+                      >
                         {idea.content}
                       </Typography>
                     </Box>
 
                     <Divider sx={{ my: 2 }} />
 
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Schedule sx={{ fontSize: 16, color: 'text.secondary' }} />
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <Schedule
+                          sx={{ fontSize: 16, color: "text.secondary" }}
+                        />
                         <Typography variant="caption" color="text.secondary">
                           {formatTimeAgo(idea.createdAt)}
                         </Typography>
                       </Box>
 
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
                         <Chip
                           label={idea.upvotes}
                           size="small"
@@ -440,9 +505,9 @@ const IdeaBoardPage = () => {
                           size="small"
                           onClick={() => handleUpvote(idea.id)}
                           sx={{
-                            bgcolor: 'primary.main',
-                            color: 'white',
-                            '&:hover': { bgcolor: 'primary.dark' },
+                            bgcolor: "primary.main",
+                            color: "white",
+                            "&:hover": { bgcolor: "primary.dark" },
                           }}
                         >
                           <ThumbUp fontSize="small" />
@@ -450,7 +515,7 @@ const IdeaBoardPage = () => {
                         <IconButton
                           size="small"
                           onClick={() => handleDeleteIdea(idea.id)}
-                          sx={{ color: 'error.main' }}
+                          sx={{ color: "error.main" }}
                         >
                           <Delete fontSize="small" />
                         </IconButton>
@@ -465,10 +530,15 @@ const IdeaBoardPage = () => {
       </Container>
 
       {/* Add Idea Dialog */}
-      <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={openAddDialog}
+        onClose={() => setOpenAddDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Lightbulb sx={{ mr: 1, color: '#6E39CB' }} />
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Lightbulb sx={{ mr: 1, color: "#6E39CB" }} />
             Share Your Idea
           </Box>
         </DialogTitle>
@@ -479,7 +549,9 @@ const IdeaBoardPage = () => {
             multiline
             rows={4}
             value={newIdea.content}
-            onChange={(e) => setNewIdea({ ...newIdea, content: e.target.value })}
+            onChange={(e) =>
+              setNewIdea({ ...newIdea, content: e.target.value })
+            }
             placeholder="What's your innovative idea? (max 280 characters)"
             helperText={`${newIdea.content.length}/280 characters`}
             error={newIdea.content.length > 280}
@@ -491,7 +563,7 @@ const IdeaBoardPage = () => {
           <Button
             onClick={handleAddIdea}
             variant="contained"
-            sx={{ bgcolor: '#6E39CB' }}
+            sx={{ bgcolor: "#6E39CB" }}
             disabled={!newIdea.content.trim() || newIdea.content.length > 280}
           >
             Share Idea
@@ -504,9 +576,13 @@ const IdeaBoardPage = () => {
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} variant="filled">
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          variant="filled"
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>
