@@ -1,8 +1,9 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
-import LandingPage from "./pages/LandingPage";
-import IdeaBoardPage from "./pages/IdeaBoardPage";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import LandingPage from './pages/LandingPage';
+import IdeaBoardPage from './pages/IdeaBoardPage';
+import KanbanPage from './pages/KanbanPage';
 
 const theme = createTheme({
   palette: {
@@ -62,6 +63,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/app" element={<IdeaBoardPage />} />
+          <Route path="/kanban" element={<KanbanPage />} />
         </Routes>
       </Router>
     </ThemeProvider>

@@ -91,6 +91,14 @@ const LandingPage = () => {
           >
             Launch App
           </Button>
+          <Button
+            color="primary"
+            variant="text"
+            onClick={() => navigate("/kanban")}
+            sx={{ ml: 1 }}
+          >
+            Kanban Board
+          </Button>
         </Toolbar>
       </AppBar>
 
