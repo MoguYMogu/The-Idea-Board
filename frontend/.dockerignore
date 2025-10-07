@@ -11,4 +11,4 @@ README.md
 .eslintrc.js
 .prettierrc
 .editorconfig
-*.log
+\*.log

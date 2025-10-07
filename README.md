@@ -43,11 +43,22 @@ A modern, responsive web application featuring a marketing landing page and an i
 - **Axios** for API communication
 - **React Router 7.9.3** for navigation
 - **date-fns** for date formatting
+- **Socket.IO Client** for real-time WebSocket connections
 
 ### Backend
 
 - **Node.js** with **Express.js 5.1.0** REST API
 - **PostgreSQL 15** database with **Prisma ORM 6.16.3**
+- **Socket.IO Server** for real-time features
+- **Comprehensive error handling** with retry logic
+
+### DevOps & Deployment
+
+- **Docker & Docker Compose** for containerization
+- **Multi-stage builds** for optimized production images
+- **Nginx** for production frontend serving
+- **Health checks** for service reliability
+- **Cross-platform deployment** scripts
 - **CORS** enabled for cross-origin requests
 - **ES6+ modules** with modern JavaScript
 
@@ -65,29 +76,32 @@ A modern, responsive web application featuring a marketing landing page and an i
 **Full-stack containerized deployment with PostgreSQL**
 
 1. **Prerequisites**
+
    - Docker Desktop installed and running
    - Git installed
 
 2. **Quick Start - Production**
+
    ```bash
    git clone <repository-url>
    cd ideaboard-app
-   
+
    # Windows
    .\docker-setup.ps1 prod
-   
+
    # Linux/Mac
    ./docker-setup.sh prod
    ```
 
 3. **Manual Docker Commands**
+
    ```bash
    # Build and start all services
    docker-compose up --build -d
-   
+
    # View logs
    docker-compose logs -f
-   
+
    # Stop all services
    docker-compose down
    ```
