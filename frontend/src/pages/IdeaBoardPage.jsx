@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { io } from "socket.io-client";
 import {
   Box,
   Container,
@@ -61,6 +62,56 @@ const IdeaBoardPage = () => {
 
   // Mock API endpoints (replace with actual API calls)
   const API_BASE = "http://localhost:5000/api";
+  
+  // WebSocket connection for real-time updates
+  const [socket, setSocket] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    const newSocket = io('http://localhost:5000');
+    setSocket(newSocket);
+
+    newSocket.on('connect', () => {
+      console.log('🔌 Connected to WebSocket');
+      setIsConnected(true);
+      newSocket.emit('join-ideas-room');
+      showSnackbar("🔄 Real-time updates enabled!", "info");
+    });
+
+    newSocket.on('disconnect', () => {
+      console.log('🔌 Disconnected from WebSocket');
+      setIsConnected(false);
+    });
+
+    newSocket.on('ideaCreated', (newIdea) => {
+      console.log('📡 New idea received:', newIdea);
+      setIdeas(prevIdeas => {
+        const updatedIdeas = [newIdea, ...prevIdeas];
+        return updatedIdeas;
+      });
+      setFilteredIdeas(prevFiltered => [newIdea, ...prevFiltered]);
+      showSnackbar("💡 New idea shared by someone!", "success");
+    });
+
+    newSocket.on('ideaUpvoted', (updatedIdea) => {
+      console.log('📡 Idea upvoted:', updatedIdea);
+      setIdeas(prevIdeas => {
+        return prevIdeas.map(idea => 
+          idea.id === updatedIdea.id ? updatedIdea : idea
+        );
+      });
+      setFilteredIdeas(prevFiltered => {
+        return prevFiltered.map(idea => 
+          idea.id === updatedIdea.id ? updatedIdea : idea
+        );
+      });
+    });
+
+    return () => {
+      newSocket.close();
+    };
+  }, []); // Empty dependency array since we want this to run once
 
   const showSnackbar = (message, severity = "success") => {
     setSnackbar({ open: true, message, severity });
@@ -349,6 +400,29 @@ const IdeaBoardPage = () => {
           >
             💡 IdeaBoard - Community Innovation Hub
           </Typography>
+          
+          {/* Real-time connection status */}
+          <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
+            <Box
+              sx={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                backgroundColor: isConnected ? '#4caf50' : '#f44336',
+                mr: 1,
+                animation: isConnected ? 'pulse 2s infinite' : 'none',
+                '@keyframes pulse': {
+                  '0%': { opacity: 1 },
+                  '50%': { opacity: 0.5 },
+                  '100%': { opacity: 1 }
+                }
+              }}
+            />
+            <Typography variant="caption" sx={{ color: 'white', opacity: 0.8 }}>
+              {isConnected ? 'Live' : 'Offline'}
+            </Typography>
+          </Box>
+          
           <IconButton color="inherit" onClick={handleRefresh} disabled={loading}>
             <Refresh />
           </IconButton>
