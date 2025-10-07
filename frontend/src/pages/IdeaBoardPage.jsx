@@ -62,47 +62,47 @@ const IdeaBoardPage = () => {
 
   // Mock API endpoints (replace with actual API calls)
   const API_BASE = "http://localhost:5000/api";
-  
+
   // WebSocket connection for real-time updates
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
 
   // Initialize WebSocket connection
   useEffect(() => {
-    const newSocket = io('http://localhost:5000');
+    const newSocket = io("http://localhost:5000");
     setSocket(newSocket);
 
-    newSocket.on('connect', () => {
-      console.log('🔌 Connected to WebSocket');
+    newSocket.on("connect", () => {
+      console.log("🔌 Connected to WebSocket");
       setIsConnected(true);
-      newSocket.emit('join-ideas-room');
+      newSocket.emit("join-ideas-room");
       showSnackbar("🔄 Real-time updates enabled!", "info");
     });
 
-    newSocket.on('disconnect', () => {
-      console.log('🔌 Disconnected from WebSocket');
+    newSocket.on("disconnect", () => {
+      console.log("🔌 Disconnected from WebSocket");
       setIsConnected(false);
     });
 
-    newSocket.on('ideaCreated', (newIdea) => {
-      console.log('📡 New idea received:', newIdea);
-      setIdeas(prevIdeas => {
+    newSocket.on("ideaCreated", (newIdea) => {
+      console.log("📡 New idea received:", newIdea);
+      setIdeas((prevIdeas) => {
         const updatedIdeas = [newIdea, ...prevIdeas];
         return updatedIdeas;
       });
-      setFilteredIdeas(prevFiltered => [newIdea, ...prevFiltered]);
+      setFilteredIdeas((prevFiltered) => [newIdea, ...prevFiltered]);
       showSnackbar("💡 New idea shared by someone!", "success");
     });
 
-    newSocket.on('ideaUpvoted', (updatedIdea) => {
-      console.log('📡 Idea upvoted:', updatedIdea);
-      setIdeas(prevIdeas => {
-        return prevIdeas.map(idea => 
+    newSocket.on("ideaUpvoted", (updatedIdea) => {
+      console.log("📡 Idea upvoted:", updatedIdea);
+      setIdeas((prevIdeas) => {
+        return prevIdeas.map((idea) =>
           idea.id === updatedIdea.id ? updatedIdea : idea
         );
       });
-      setFilteredIdeas(prevFiltered => {
-        return prevFiltered.map(idea => 
+      setFilteredIdeas((prevFiltered) => {
+        return prevFiltered.map((idea) =>
           idea.id === updatedIdea.id ? updatedIdea : idea
         );
       });
@@ -126,11 +126,11 @@ const IdeaBoardPage = () => {
     try {
       setLoading(true);
       const response = await fetch(`${API_BASE}/ideas`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
 
       if (data.success) {
@@ -147,14 +147,14 @@ const IdeaBoardPage = () => {
     } catch (error) {
       console.error("Error fetching ideas:", error);
       setApiError(true);
-      
+
       if (retries > 0) {
         console.log(`Retrying... (${retries} attempts left)`);
         setRetryCount(3 - retries + 1);
         setTimeout(() => fetchIdeas(retries - 1), 2000);
         return;
       }
-      
+
       // Use mock data if all retries fail
       const mockIdeas = [
         {
@@ -192,7 +192,7 @@ const IdeaBoardPage = () => {
       setIdeas(mockIdeas);
       setFilteredIdeas(mockIdeas);
       showSnackbar(
-        "⚠️ Using offline mode. Check your connection and try refreshing.", 
+        "⚠️ Using offline mode. Check your connection and try refreshing.",
         "warning"
       );
     } finally {
@@ -242,7 +242,7 @@ const IdeaBoardPage = () => {
     } catch (error) {
       console.error("Error adding idea:", error);
       setApiError(true);
-      
+
       // Fallback to local state if API fails
       const newIdeaObj = {
         id: Date.now().toString(),
@@ -255,7 +255,10 @@ const IdeaBoardPage = () => {
       applyFiltersAndSort(updatedIdeas, searchText, sortBy);
       setNewIdea({ content: "" });
       setOpenAddDialog(false);
-      showSnackbar("Idea saved locally! Will sync when connection is restored. 💡", "warning");
+      showSnackbar(
+        "Idea saved locally! Will sync when connection is restored. 💡",
+        "warning"
+      );
     } finally {
       setSubmitLoading(false);
     }
@@ -263,8 +266,8 @@ const IdeaBoardPage = () => {
 
   // Upvote idea with loading state
   const handleUpvote = async (ideaId) => {
-    setUpvoteLoading(prev => ({ ...prev, [ideaId]: true }));
-    
+    setUpvoteLoading((prev) => ({ ...prev, [ideaId]: true }));
+
     try {
       const response = await fetch(`${API_BASE}/ideas/${ideaId}/upvote`, {
         method: "PUT",
@@ -293,16 +296,19 @@ const IdeaBoardPage = () => {
     } catch (error) {
       console.error("Error upvoting idea:", error);
       setApiError(true);
-      
+
       // Fallback to local state
       const updatedIdeas = ideas.map((idea) =>
         idea.id === ideaId ? { ...idea, upvotes: idea.upvotes + 1 } : idea
       );
       setIdeas(updatedIdeas);
       applyFiltersAndSort(updatedIdeas, searchText, sortBy);
-      showSnackbar("Upvote saved locally! Will sync when connection is restored. 👍", "warning");
+      showSnackbar(
+        "Upvote saved locally! Will sync when connection is restored. 👍",
+        "warning"
+      );
     } finally {
-      setUpvoteLoading(prev => ({ ...prev, [ideaId]: false }));
+      setUpvoteLoading((prev) => ({ ...prev, [ideaId]: false }));
     }
   };
 
@@ -400,30 +406,34 @@ const IdeaBoardPage = () => {
           >
             💡 IdeaBoard - Community Innovation Hub
           </Typography>
-          
+
           {/* Real-time connection status */}
-          <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", mr: 2 }}>
             <Box
               sx={{
                 width: 8,
                 height: 8,
-                borderRadius: '50%',
-                backgroundColor: isConnected ? '#4caf50' : '#f44336',
+                borderRadius: "50%",
+                backgroundColor: isConnected ? "#4caf50" : "#f44336",
                 mr: 1,
-                animation: isConnected ? 'pulse 2s infinite' : 'none',
-                '@keyframes pulse': {
-                  '0%': { opacity: 1 },
-                  '50%': { opacity: 0.5 },
-                  '100%': { opacity: 1 }
-                }
+                animation: isConnected ? "pulse 2s infinite" : "none",
+                "@keyframes pulse": {
+                  "0%": { opacity: 1 },
+                  "50%": { opacity: 0.5 },
+                  "100%": { opacity: 1 },
+                },
               }}
             />
-            <Typography variant="caption" sx={{ color: 'white', opacity: 0.8 }}>
-              {isConnected ? 'Live' : 'Offline'}
+            <Typography variant="caption" sx={{ color: "white", opacity: 0.8 }}>
+              {isConnected ? "Live" : "Offline"}
             </Typography>
           </Box>
-          
-          <IconButton color="inherit" onClick={handleRefresh} disabled={loading}>
+
+          <IconButton
+            color="inherit"
+            onClick={handleRefresh}
+            disabled={loading}
+          >
             <Refresh />
           </IconButton>
         </Toolbar>
@@ -432,18 +442,18 @@ const IdeaBoardPage = () => {
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Connection Status */}
         {apiError && (
-          <Paper 
-            sx={{ 
-              p: 2, 
-              mb: 3, 
-              backgroundColor: '#fff3cd',
-              borderLeft: '4px solid #ffc107',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2
+          <Paper
+            sx={{
+              p: 2,
+              mb: 3,
+              backgroundColor: "#fff3cd",
+              borderLeft: "4px solid #ffc107",
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
             }}
           >
-            <Typography variant="body2" sx={{ color: '#856404', flex: 1 }}>
+            <Typography variant="body2" sx={{ color: "#856404", flex: 1 }}>
               ⚠️ Working in offline mode. Your changes will be saved locally.
               {retryCount > 0 && ` (Retry attempt ${retryCount}/3)`}
             </Typography>
@@ -452,10 +462,13 @@ const IdeaBoardPage = () => {
               variant="outlined"
               onClick={handleRefresh}
               disabled={loading}
-              sx={{ 
-                borderColor: '#ffc107',
-                color: '#856404',
-                '&:hover': { borderColor: '#e0a800', backgroundColor: '#fff3cd' }
+              sx={{
+                borderColor: "#ffc107",
+                color: "#856404",
+                "&:hover": {
+                  borderColor: "#e0a800",
+                  backgroundColor: "#fff3cd",
+                },
               }}
             >
               Retry Connection
@@ -725,15 +738,26 @@ const IdeaBoardPage = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenAddDialog(false)} disabled={submitLoading}>
+          <Button
+            onClick={() => setOpenAddDialog(false)}
+            disabled={submitLoading}
+          >
             Cancel
           </Button>
           <Button
             onClick={handleAddIdea}
             variant="contained"
             sx={{ bgcolor: "#6E39CB" }}
-            disabled={!newIdea.content.trim() || newIdea.content.length > 280 || submitLoading}
-            startIcon={submitLoading ? <CircularProgress size={20} color="inherit" /> : null}
+            disabled={
+              !newIdea.content.trim() ||
+              newIdea.content.length > 280 ||
+              submitLoading
+            }
+            startIcon={
+              submitLoading ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : null
+            }
           >
             {submitLoading ? "Sharing..." : "Share Idea"}
           </Button>

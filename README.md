@@ -60,27 +60,59 @@ A modern, responsive web application featuring a marketing landing page and an i
 
 ## 🚀 How to Run the Project
 
-### Option 1: Quick Start with Docker (Recommended)
+### Option 1: Docker Production Setup (Recommended)
+
+**Full-stack containerized deployment with PostgreSQL**
 
 1. **Prerequisites**
-
    - Docker Desktop installed and running
    - Git installed
 
-2. **Clone and Start**
-
+2. **Quick Start - Production**
    ```bash
    git clone <repository-url>
    cd ideaboard-app
-   docker-compose up --build
+   
+   # Windows
+   .\docker-setup.ps1 prod
+   
+   # Linux/Mac
+   ./docker-setup.sh prod
    ```
 
-3. **Access the Application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:5000
-   - Database: PostgreSQL on localhost:5432
+3. **Manual Docker Commands**
+   ```bash
+   # Build and start all services
+   docker-compose up --build -d
+   
+   # View logs
+   docker-compose logs -f
+   
+   # Stop all services
+   docker-compose down
+   ```
 
-### Option 2: Manual Development Setup
+4. **Access the Application**
+   - 🌐 **Frontend**: http://localhost:3000
+   - 🔧 **Backend API**: http://localhost:5000
+   - 🗄️ **Database**: PostgreSQL on localhost:5432
+
+### Option 2: Docker Development Setup
+
+**Database in container, manual backend/frontend for development**
+
+```bash
+# Start only PostgreSQL database
+.\docker-setup.ps1 dev  # Windows
+./docker-setup.sh dev   # Linux/Mac
+
+# Or manually:
+docker-compose -f docker-compose.dev.yml up -d
+```
+
+Then run backend and frontend manually (see Option 3).
+
+### Option 3: Manual Development Setup
 
 1. **Prerequisites**
 

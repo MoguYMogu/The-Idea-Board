@@ -60,8 +60,8 @@ router.post("/", async (req, res) => {
     });
 
     // Emit real-time event to all connected clients
-    const io = req.app.get('io');
-    io.to('ideas').emit('ideaCreated', idea);
+    const io = req.app.get("io");
+    io.to("ideas").emit("ideaCreated", idea);
 
     res.status(201).json({
       success: true,
@@ -106,8 +106,8 @@ router.put("/:id/upvote", async (req, res) => {
     });
 
     // Emit real-time event to all connected clients
-    const io = req.app.get('io');
-    io.to('ideas').emit('ideaUpvoted', updatedIdea);
+    const io = req.app.get("io");
+    io.to("ideas").emit("ideaUpvoted", updatedIdea);
 
     res.json({
       success: true,

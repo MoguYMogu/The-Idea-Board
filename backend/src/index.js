@@ -13,14 +13,14 @@ const server = createServer(app);
 const io = new Server(server, {
   cors: {
     origin: ["http://localhost:5173", "http://localhost:3000"],
-    methods: ["GET", "POST", "PUT", "DELETE"]
-  }
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  },
 });
 const port = process.env.PORT || 5000;
 const prisma = new PrismaClient();
 
 // Make io available to routes
-app.set('io', io);
+app.set("io", io);
 
 // Middleware
 app.use(cors());
@@ -56,15 +56,15 @@ app.use((req, res) => {
 });
 
 // Socket.IO connection handling
-io.on('connection', (socket) => {
+io.on("connection", (socket) => {
   console.log(`🔌 Client connected: ${socket.id}`);
-  
-  socket.on('disconnect', () => {
+
+  socket.on("disconnect", () => {
     console.log(`🔌 Client disconnected: ${socket.id}`);
   });
-  
-  socket.on('join-ideas-room', () => {
-    socket.join('ideas');
+
+  socket.on("join-ideas-room", () => {
+    socket.join("ideas");
     console.log(`📡 Client ${socket.id} joined ideas room`);
   });
 });
