@@ -11,13 +11,37 @@ function Write-Header {
 }
 
 function Test-Docker {
+    Write-Host "🔍 Checking Docker status..." -ForegroundColor Yellow
+    
+    # Check if Docker Desktop process is running
+    $dockerProcess = Get-Process "Docker Desktop" -ErrorAction SilentlyContinue
+    if (-not $dockerProcess) {
+        Write-Host "❌ Docker Desktop is not running. Please start Docker Desktop first." -ForegroundColor Red
+        Write-Host "💡 Steps to fix:" -ForegroundColor Yellow
+        Write-Host "   1. Open Docker Desktop application" -ForegroundColor White
+        Write-Host "   2. Wait for the whale icon to appear in system tray" -ForegroundColor White
+        Write-Host "   3. Ensure it shows 'Docker Desktop is running'" -ForegroundColor White
+        return $false
+    }
+    
+    # Wait a bit for Docker to fully initialize
+    Start-Sleep -Seconds 3
+    
+    # Test Docker connectivity
     try {
-        docker info | Out-Null
-        Write-Host "✅ Docker is running" -ForegroundColor Green
-        return $true
+        $dockerInfo = docker info 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "✅ Docker is running and accessible" -ForegroundColor Green
+            return $true
+        } else {
+            Write-Host "❌ Docker is starting but not ready yet..." -ForegroundColor Red
+            Write-Host "💡 Please wait 30-60 seconds for Docker to fully start, then try again." -ForegroundColor Yellow
+            return $false
+        }
     }
     catch {
-        Write-Host "❌ Docker is not running. Please start Docker Desktop and try again." -ForegroundColor Red
+        Write-Host "❌ Cannot connect to Docker. Please restart Docker Desktop." -ForegroundColor Red
+        Write-Host "💡 Try: Right-click Docker Desktop → Restart" -ForegroundColor Yellow
         return $false
     }
 }
