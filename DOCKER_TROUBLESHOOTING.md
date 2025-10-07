@@ -7,22 +7,26 @@ This error occurs when Docker Desktop isn't properly running or initialized.
 ### ✅ Step-by-Step Fix
 
 #### 1. Check Docker Desktop Status
+
 ```powershell
 # Check if Docker Desktop process is running
 Get-Process "Docker Desktop" -ErrorAction SilentlyContinue
 ```
 
 #### 2. Start Docker Desktop Properly
+
 - **Option A**: Click the Docker Desktop icon on your desktop
 - **Option B**: Search "Docker Desktop" in Windows Start menu
 - **Option C**: Run from Command Prompt: `"C:\Program Files\Docker\Docker\Docker Desktop.exe"`
 
 #### 3. Wait for Full Initialization
+
 - Look for the whale 🐳 icon in your system tray (bottom-right corner)
 - Wait until it shows "Docker Desktop is running"
 - This can take 1-3 minutes on first startup
 
 #### 4. Verify Docker is Working
+
 ```powershell
 # Test Docker connection
 docker --version
@@ -32,16 +36,20 @@ docker info
 ### 🔧 Advanced Troubleshooting
 
 #### If Docker Desktop Won't Start:
+
 1. **Restart Docker Desktop**
+
    - Right-click the whale icon → "Restart"
    - Or close Docker Desktop completely and reopen
 
 2. **Check Windows Features**
+
    - Enable "Windows Subsystem for Linux" (WSL)
    - Enable "Virtual Machine Platform"
    - Restart your computer after enabling
 
 3. **Reset Docker Desktop**
+
    - Docker Desktop → Settings → Troubleshoot → "Reset to factory defaults"
 
 4. **Check System Requirements**
@@ -50,6 +58,7 @@ docker info
    - At least 4GB RAM available
 
 #### If Still Having Issues:
+
 ```powershell
 # Check Windows version
 winver
@@ -64,6 +73,7 @@ wsl --status
 ### 🎯 Quick Fix Commands
 
 #### Restart Docker Service:
+
 ```powershell
 # Stop Docker
 Stop-Service -Name "Docker Desktop Service" -Force
@@ -73,6 +83,7 @@ Start-Service -Name "Docker Desktop Service"
 ```
 
 #### Alternative: Use Docker Desktop GUI
+
 1. Right-click Docker Desktop icon in system tray
 2. Select "Restart"
 3. Wait for green "Running" status
@@ -95,16 +106,81 @@ If you get "port already in use" errors:
 # Check what's using port 3000
 netstat -ano | findstr ":3000"
 
-# Check what's using port 5000  
+# Check what's using port 5000
 netstat -ano | findstr ":5000"
 
 # Kill a process using port (replace PID with actual process ID)
 taskkill /PID <PID> /F
 ```
 
-### 💡 Success Indicators
+### 🌐 API Not Working (localhost:5000/api/ideas shows "offline mode")
+
+This specific issue occurs when the backend container isn't properly serving the API endpoints.
+
+#### Quick Diagnosis Tool
+```powershell
+# Use the provided debugging script
+.\debug-api.ps1 full
+```
+
+#### Manual Troubleshooting Steps
+
+1. **Check if backend container is running**
+   ```powershell
+   docker ps | findstr ideaboard-backend
+   ```
+
+2. **Test the health endpoint first**
+   ```powershell
+   # This should return {"status":"OK",...}
+   curl http://localhost:5000/health
+   ```
+
+3. **Check backend container logs**
+   ```powershell
+   docker logs ideaboard-backend
+   ```
+
+4. **Common causes and fixes:**
+   - **Database connection failed**: Check PostgreSQL container
+     ```powershell
+     docker logs ideaboard-postgres
+     ```
+   - **Port 5000 already in use**: Kill the conflicting process
+     ```powershell
+     netstat -ano | findstr ":5000"
+     taskkill /PID <PID> /F
+     ```
+   - **Backend container crashed**: Restart containers
+     ```powershell
+     docker-compose restart backend
+     ```
+
+5. **If ideas endpoint specifically fails**:
+   ```powershell
+   # Check database tables exist
+   docker exec -it ideaboard-postgres psql -U postgres -d ideaboard -c "\dt"
+   
+   # Should show: idea, _prisma_migrations tables
+   ```
+
+6. **Nuclear option - complete restart**:
+   ```powershell
+   docker-compose down
+   docker-compose build --no-cache
+   docker-compose up -d
+   ```
+
+#### Expected Working Behavior
+- ✅ `http://localhost:5000/health` → Returns JSON with status "OK"  
+- ✅ `http://localhost:5000/api/ideas` → Returns JSON with ideas array
+- ✅ `docker logs ideaboard-backend` → Shows "Server running on port 5000"
+- ✅ No error messages about database connection
+
+### 💡 **Success Indicators**
 
 You'll know everything is working when:
+
 - No error messages during `docker-compose up`
 - http://localhost:3000 shows the IdeaBoard frontend
 - http://localhost:5000/health returns `{"status":"OK","timestamp":"..."}`
@@ -113,6 +189,7 @@ You'll know everything is working when:
 ### 🆘 Last Resort
 
 If nothing works:
+
 1. Completely uninstall Docker Desktop
 2. Restart your computer
 3. Reinstall Docker Desktop from https://www.docker.com/products/docker-desktop/

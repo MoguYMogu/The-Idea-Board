@@ -4,6 +4,37 @@ import { PrismaClient } from "@prisma/client";
 const router = express.Router();
 const prisma = new PrismaClient();
 
+// GET /api/ideas/test - Database table test endpoint
+router.get("/test", async (req, res) => {
+  try {
+    // Test database connection and table structure
+    const tableInfo = await prisma.$executeRaw`
+      SELECT column_name, data_type 
+      FROM information_schema.columns 
+      WHERE table_name = 'idea' 
+      ORDER BY ordinal_position;
+    `;
+    
+    const ideaCount = await prisma.idea.count();
+    
+    res.json({
+      success: true,
+      message: "Database and ideas table are accessible",
+      tableColumns: tableInfo,
+      ideaCount: ideaCount,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error("Database test failed:", error);
+    res.status(500).json({
+      success: false,
+      error: "Database test failed",
+      message: error.message,
+      hint: "Database may not be initialized or migrations may not have run"
+    });
+  }
+});
+
 // GET /api/ideas - Fetch all ideas
 router.get("/", async (req, res) => {
   try {

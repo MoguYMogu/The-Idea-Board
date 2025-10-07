@@ -35,6 +35,33 @@ app.get("/health", (req, res) => {
   });
 });
 
+// Database connectivity check endpoint
+app.get("/health/database", async (req, res) => {
+  try {
+    // Test database connection
+    await prisma.$connect();
+    const result = await prisma.$executeRaw`SELECT 1 as test`;
+    
+    res.status(200).json({
+      status: "OK",
+      message: "Database connection successful",
+      timestamp: new Date().toISOString(),
+      database: {
+        connected: true,
+        url: process.env.DATABASE_URL?.replace(/:[^:]*@/, ':***@') || "Not configured"
+      }
+    });
+  } catch (error) {
+    console.error("Database health check failed:", error);
+    res.status(500).json({
+      status: "ERROR",
+      message: "Database connection failed",
+      error: error.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
 // API Routes
 app.use("/api/ideas", ideasRouter);
 
