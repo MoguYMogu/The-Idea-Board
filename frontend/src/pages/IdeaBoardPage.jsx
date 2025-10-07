@@ -45,6 +45,8 @@ const IdeaBoardPage = () => {
   const [ideas, setIdeas] = useState([]);
   const [filteredIdeas, setFilteredIdeas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [upvoteLoading, setUpvoteLoading] = useState({});
   const [searchText, setSearchText] = useState("");
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [newIdea, setNewIdea] = useState({ content: "" });
@@ -54,6 +56,8 @@ const IdeaBoardPage = () => {
     severity: "success",
   });
   const [sortBy, setSortBy] = useState("newest"); // 'newest', 'oldest', 'popular', 'unpopular'
+  const [apiError, setApiError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Mock API endpoints (replace with actual API calls)
   const API_BASE = "http://localhost:5000/api";
@@ -66,22 +70,41 @@ const IdeaBoardPage = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
-  // Fetch ideas from API
-  const fetchIdeas = async () => {
+  // Fetch ideas from API with retry logic
+  const fetchIdeas = async (retries = 3) => {
     try {
       setLoading(true);
       const response = await fetch(`${API_BASE}/ideas`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
 
       if (data.success) {
         setIdeas(data.data);
         setFilteredIdeas(data.data);
+        setApiError(false);
+        setRetryCount(0);
+        if (retryCount > 0) {
+          showSnackbar("Connection restored! ✅", "success");
+        }
       } else {
-        showSnackbar("Failed to fetch ideas", "error");
+        throw new Error(data.error || "Failed to fetch ideas");
       }
     } catch (error) {
       console.error("Error fetching ideas:", error);
-      // Use mock data if API fails
+      setApiError(true);
+      
+      if (retries > 0) {
+        console.log(`Retrying... (${retries} attempts left)`);
+        setRetryCount(3 - retries + 1);
+        setTimeout(() => fetchIdeas(retries - 1), 2000);
+        return;
+      }
+      
+      // Use mock data if all retries fail
       const mockIdeas = [
         {
           id: "1",
@@ -117,12 +140,16 @@ const IdeaBoardPage = () => {
       ];
       setIdeas(mockIdeas);
       setFilteredIdeas(mockIdeas);
+      showSnackbar(
+        "⚠️ Using offline mode. Check your connection and try refreshing.", 
+        "warning"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // Add new idea
+  // Add new idea with improved error handling
   const handleAddIdea = async () => {
     if (!newIdea.content.trim()) {
       showSnackbar("Please enter an idea", "error");
@@ -134,6 +161,7 @@ const IdeaBoardPage = () => {
       return;
     }
 
+    setSubmitLoading(true);
     try {
       const response = await fetch(`${API_BASE}/ideas`, {
         method: "POST",
@@ -142,6 +170,10 @@ const IdeaBoardPage = () => {
         },
         body: JSON.stringify({ content: newIdea.content.trim() }),
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
 
@@ -152,11 +184,14 @@ const IdeaBoardPage = () => {
         setNewIdea({ content: "" });
         setOpenAddDialog(false);
         showSnackbar("Idea added successfully! 🎉");
+        setApiError(false);
       } else {
-        showSnackbar(data.error || "Failed to add idea", "error");
+        throw new Error(data.error || "Failed to add idea");
       }
     } catch (error) {
       console.error("Error adding idea:", error);
+      setApiError(true);
+      
       // Fallback to local state if API fails
       const newIdeaObj = {
         id: Date.now().toString(),
@@ -169,12 +204,16 @@ const IdeaBoardPage = () => {
       applyFiltersAndSort(updatedIdeas, searchText, sortBy);
       setNewIdea({ content: "" });
       setOpenAddDialog(false);
-      showSnackbar("Idea added locally! 💡");
+      showSnackbar("Idea saved locally! Will sync when connection is restored. 💡", "warning");
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
-  // Upvote idea
+  // Upvote idea with loading state
   const handleUpvote = async (ideaId) => {
+    setUpvoteLoading(prev => ({ ...prev, [ideaId]: true }));
+    
     try {
       const response = await fetch(`${API_BASE}/ideas/${ideaId}/upvote`, {
         method: "PUT",
@@ -182,6 +221,10 @@ const IdeaBoardPage = () => {
           "Content-Type": "application/json",
         },
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
 
@@ -192,19 +235,30 @@ const IdeaBoardPage = () => {
         setIdeas(updatedIdeas);
         applyFiltersAndSort(updatedIdeas, searchText, sortBy);
         showSnackbar("Thanks for your upvote! 👍");
+        setApiError(false);
       } else {
-        showSnackbar(data.error || "Failed to upvote", "error");
+        throw new Error(data.error || "Failed to upvote");
       }
     } catch (error) {
       console.error("Error upvoting idea:", error);
+      setApiError(true);
+      
       // Fallback to local state
       const updatedIdeas = ideas.map((idea) =>
         idea.id === ideaId ? { ...idea, upvotes: idea.upvotes + 1 } : idea
       );
       setIdeas(updatedIdeas);
       applyFiltersAndSort(updatedIdeas, searchText, sortBy);
-      showSnackbar("Upvoted locally! 👍");
+      showSnackbar("Upvote saved locally! Will sync when connection is restored. 👍", "warning");
+    } finally {
+      setUpvoteLoading(prev => ({ ...prev, [ideaId]: false }));
     }
+  };
+
+  // Refresh data manually
+  const handleRefresh = () => {
+    setRetryCount(0);
+    fetchIdeas();
   };
 
   // Delete idea (local only for demo)
@@ -295,13 +349,46 @@ const IdeaBoardPage = () => {
           >
             💡 IdeaBoard - Community Innovation Hub
           </Typography>
-          <IconButton color="inherit" onClick={fetchIdeas} disabled={loading}>
+          <IconButton color="inherit" onClick={handleRefresh} disabled={loading}>
             <Refresh />
           </IconButton>
         </Toolbar>
       </AppBar>
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
+        {/* Connection Status */}
+        {apiError && (
+          <Paper 
+            sx={{ 
+              p: 2, 
+              mb: 3, 
+              backgroundColor: '#fff3cd',
+              borderLeft: '4px solid #ffc107',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2
+            }}
+          >
+            <Typography variant="body2" sx={{ color: '#856404', flex: 1 }}>
+              ⚠️ Working in offline mode. Your changes will be saved locally.
+              {retryCount > 0 && ` (Retry attempt ${retryCount}/3)`}
+            </Typography>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={handleRefresh}
+              disabled={loading}
+              sx={{ 
+                borderColor: '#ffc107',
+                color: '#856404',
+                '&:hover': { borderColor: '#e0a800', backgroundColor: '#fff3cd' }
+              }}
+            >
+              Retry Connection
+            </Button>
+          </Paper>
+        )}
+
         {/* Header Stats */}
         <Paper
           sx={{
@@ -504,13 +591,18 @@ const IdeaBoardPage = () => {
                         <IconButton
                           size="small"
                           onClick={() => handleUpvote(idea.id)}
+                          disabled={upvoteLoading[idea.id]}
                           sx={{
                             bgcolor: "primary.main",
                             color: "white",
                             "&:hover": { bgcolor: "primary.dark" },
                           }}
                         >
-                          <ThumbUp fontSize="small" />
+                          {upvoteLoading[idea.id] ? (
+                            <CircularProgress size={16} color="inherit" />
+                          ) : (
+                            <ThumbUp fontSize="small" />
+                          )}
                         </IconButton>
                         <IconButton
                           size="small"
@@ -559,14 +651,17 @@ const IdeaBoardPage = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenAddDialog(false)}>Cancel</Button>
+          <Button onClick={() => setOpenAddDialog(false)} disabled={submitLoading}>
+            Cancel
+          </Button>
           <Button
             onClick={handleAddIdea}
             variant="contained"
             sx={{ bgcolor: "#6E39CB" }}
-            disabled={!newIdea.content.trim() || newIdea.content.length > 280}
+            disabled={!newIdea.content.trim() || newIdea.content.length > 280 || submitLoading}
+            startIcon={submitLoading ? <CircularProgress size={20} color="inherit" /> : null}
           >
-            Share Idea
+            {submitLoading ? "Sharing..." : "Share Idea"}
           </Button>
         </DialogActions>
       </Dialog>
